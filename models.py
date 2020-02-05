@@ -24,13 +24,21 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(32,64, 3)
         self.conv3 = nn.Conv2d(64,128, 3)
         self.conv4 = nn.Conv2d(128,256, 3)
+        self.conv_bn2 = nn.BatchNorm2d(64)
+        self.conv_bn3 = nn.BatchNorm2d(128)
+        self.conv_bn4 = nn.BatchNorm2d(256)
+        
+   
         self.pool = nn.MaxPool2d(2,2)
-        self.pool2 = nn.MaxPool2d(2,2,ceil_mode=True)
-       
-        self.fc1 = nn.Linear(12*12*256,3000)
-        self.fc2 = nn.Linear(3000,500)
-        self.fc3 = nn.Linear(500,136)
+      
+        self.fc1 = nn.Linear(12*12*256,2048)
+        self.fc2 = nn.Linear(2048,1024)
+        self.fc3 = nn.Linear(1024,136)
         self.drop = nn.Dropout(0.4)
+        self.drop_conv = nn.Dropout2d(0.4)
+        self.bn_fc1 = nn.BatchNorm1d(2048)
+        self.bn_fc2 = nn.BatchNorm1d(1024)
+        
         ## Note that among the layers to add, consider including:
         # maxpooling layers, multiple conv layers, fully-connected layers, and other layers (such as dropout or batch normalization) to avoid overfitting
         
@@ -42,17 +50,17 @@ class Net(nn.Module):
         ## x = self.pool(F.relu(self.conv1(x)))
         
         x = self.pool(F.relu(self.conv1(x)))        
-        x = self.drop(x)
-        x = self.pool(F.relu((self.conv2(x))))        
-        x = self.drop(x)
-        x = self.pool(F.relu((self.conv3(x))))        
-        x = self.drop(x)
-        x = self.pool2(F.relu((self.conv4(x))))
-        x = self.drop(x)
+        x = self.drop_conv(x)
+        x = self.pool(F.relu(self.conv_bn2(self.conv2(x))))        
+        x = self.drop_conv(x)
+        x = self.pool(F.relu(self.conv_bn3(self.conv3(x))))        
+        x = self.drop_conv(x)
+        x = self.pool(F.relu(self.conv_bn4(self.conv4(x))))
+        x = self.drop_conv(x)
         x = x.view(x.size(0), -1)
-        x = F.relu(self.fc1(x))
+        x = F.relu(self.bn_fc1(self.fc1(x)))
         x = self.drop(x)
-        x = F.relu((self.fc2(x)))
+        x = F.relu(self.bn_fc2(self.fc2(x)))
         x = self.drop(x)
         x = self.fc3(x)
    
