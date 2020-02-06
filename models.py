@@ -34,8 +34,14 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(12*12*256,2048)
         self.fc2 = nn.Linear(2048,1024)
         self.fc3 = nn.Linear(1024,136)
-        self.drop = nn.Dropout(0.4)
-        self.drop_conv = nn.Dropout2d(0.4)
+        self.drop1 = nn.Dropout(0.4)
+        self.drop2 = nn.Dropout(0.5) 
+        self.drop_conv1 = nn.Dropout2d(0.05)
+        self.drop_conv2 = nn.Dropout2d(0.1)
+        self.drop_conv3 = nn.Dropout2d(0.2)
+        self.drop_conv4 = nn.Dropout2d(0.3)
+        
+        
         self.bn_fc1 = nn.BatchNorm1d(2048)
         self.bn_fc2 = nn.BatchNorm1d(1024)
         
@@ -49,19 +55,19 @@ class Net(nn.Module):
         ## x is the input image and, as an example, here you may choose to include a pool/conv step:
         ## x = self.pool(F.relu(self.conv1(x)))
         
-        x = self.pool(F.relu(self.conv1(x)))        
-        x = self.drop_conv(x)
-        x = self.pool(F.relu(self.conv_bn2(self.conv2(x))))        
-        x = self.drop_conv(x)
-        x = self.pool(F.relu(self.conv_bn3(self.conv3(x))))        
-        x = self.drop_conv(x)
-        x = self.pool(F.relu(self.conv_bn4(self.conv4(x))))
-        x = self.drop_conv(x)
+        x = self.pool(F.leaky_relu(self.conv1(x)))        
+        x = self.drop_conv1(x)
+        x = self.pool(F.leaky_relu(self.conv_bn2(self.conv2(x))))        
+        x = self.drop_conv2(x)
+        x = self.pool(F.leaky_relu(self.conv_bn3(self.conv3(x))))        
+        x = self.drop_conv3(x)
+        x = self.pool(F.leaky_relu(self.conv_bn4(self.conv4(x))))
+        x = self.drop_conv4(x)
         x = x.view(x.size(0), -1)
-        x = F.relu(self.bn_fc1(self.fc1(x)))
-        x = self.drop(x)
-        x = F.relu(self.bn_fc2(self.fc2(x)))
-        x = self.drop(x)
+        x = F.leaky_relu(self.bn_fc1(self.fc1(x)))
+        x = self.drop1(x)
+        x = F.leaky_relu(self.bn_fc2(self.fc2(x)))
+        x = self.drop2(x)
         x = self.fc3(x)
    
         # a modified x, having gone through all the layers of your model, should be returned
